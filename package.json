@@ -1,17 +1,19 @@
 {
 	"name": "@dumpstate/web-worker-proxy",
-	"version": "0.1.8",
+	"version": "0.2.0",
 	"description": "Web worker proxy for JavaScript objects.",
 	"main": "lib/index.js",
+	"types": "lib/index.d.ts",
+	"engines": {
+		"node": ">=18"
+	},
 	"scripts": {
 		"build": "tsc",
-		"build:test": "npm run build:test:worker:ts && npm run build:test:worker:bundle",
-		"build:test:worker:ts": "tsc test/workers/foo.worker.ts --outDir build",
-		"build:test:worker:bundle": "browserify build/test/workers/foo.worker.js -o build/foo.worker.js",
+		"build:test:worker": "esbuild test/workers/foo.worker.ts --bundle --outfile=build/foo.worker.js --format=iife",
 		"lint": "prettier --check .",
-		"prepublish": "npm run build",
+		"prepublishOnly": "npm run build",
 		"style:fix": "prettier --write .",
-		"test": "npm run build:test && karma start"
+		"test": "npm run build:test:worker && vitest run"
 	},
 	"repository": {
 		"type": "git",
@@ -28,16 +30,11 @@
 	},
 	"homepage": "https://github.com/dumpstate/web-worker-proxy#readme",
 	"devDependencies": {
-		"@types/expect.js": "^0.3.31",
-		"@types/mocha": "^10.0.3",
-		"browserify": "^17.0.0",
-		"expect.js": "^0.3.1",
-		"karma": "^6.4.2",
-		"karma-chrome-launcher": "^3.2.0",
-		"karma-mocha": "^2.0.1",
-		"karma-typescript": "^5.5.4",
-		"mocha": "^10.2.0",
-		"prettier": "^3.0.3",
-		"typescript": "^5.2.2"
+		"@vitest/browser": "^3.0.5",
+		"esbuild": "^0.25.0",
+		"playwright": "^1.50.1",
+		"prettier": "^3.8.1",
+		"typescript": "^5.9.3",
+		"vitest": "^3.0.5"
 	}
 }

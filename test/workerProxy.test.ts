@@ -1,34 +1,35 @@
+import { describe, it, expect } from "vitest"
 import { workerProxy } from "../src/workerProxy"
 import { Foo } from "./Foo"
 
-describe("workerProxy", async () => {
-	const WORKER_PATH = "base/build/foo.worker.js"
+describe("workerProxy", () => {
+	const WORKER_PATH = "/foo.worker.js"
 	const expectedFoo = new Foo()
 
 	it("should call worker", async () => {
 		const foo = await workerProxy<Foo>(WORKER_PATH)
-		expect(await foo.foo()).to.be(expectedFoo.foo())
+		expect(await foo.foo()).toBe(expectedFoo.foo())
 	})
 
 	it("should get property value", async () => {
 		const foo = await workerProxy<Foo>(WORKER_PATH)
 		const res: string = await foo.baz()
 
-		expect(res).to.be(expectedFoo.baz)
+		expect(res).toBe(expectedFoo.baz)
 	})
 
 	it("should call async worker method", async () => {
 		const foo = await workerProxy<Foo>(WORKER_PATH)
 		const res: string = await foo.asyncFoo()
 
-		expect(res).to.be(await expectedFoo.asyncFoo())
+		expect(res).toBe(await expectedFoo.asyncFoo())
 	})
 
 	it("should call worker multiple times", async () => {
 		const foo = await workerProxy<Foo>(WORKER_PATH)
 		const res = await Promise.all([foo.foo(), foo.bar(), foo.foo()])
 
-		expect(res).to.eql([
+		expect(res).toEqual([
 			expectedFoo.foo(),
 			expectedFoo.bar(),
 			expectedFoo.foo(),
@@ -47,35 +48,21 @@ describe("workerProxy", async () => {
 		]
 		const res = await foo.identity(...args)
 
-		expect(res).to.eql(expectedFoo.identity(...args))
+		expect(res).toEqual(expectedFoo.identity(...args))
 	})
 
 	it("should timeout if worker fails to load", async () => {
-		let error = null
-		try {
-			await workerProxy<Foo>("invalid-path", { loadTimeout: 500 })
-		} catch (err) {
-			error = err
-
-			expect(err.toString()).to.contain("Worker failed to load")
-		}
-
-		expect(error).to.not.be(null)
+		await expect(
+			workerProxy<Foo>("invalid-path", { loadTimeout: 500 }),
+		).rejects.toThrow("Worker failed to load")
 	})
 
 	it("it should throw error straight from the worker", async () => {
 		const foo = await workerProxy<Foo>(WORKER_PATH)
 		const errMessage = "Inner error message"
-		let error = null
 
-		try {
-			await foo.raise(new Error(errMessage))
-		} catch (err) {
-			error = err
-
-			expect(err.message).to.equal(`Error: ${errMessage}`)
-		}
-
-		expect(error).to.not.be(null)
+		await expect(foo.raise(new Error(errMessage))).rejects.toThrow(
+			`Error: ${errMessage}`,
+		)
 	})
 })
