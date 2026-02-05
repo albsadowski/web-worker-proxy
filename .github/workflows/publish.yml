@@ -2,17 +2,19 @@ name: publish
 
 on:
     workflow_run:
-        workflows: test
-        branches: main
-        types: completed
+        workflows: [test]
+        branches: [main]
+        types: [completed]
 
 jobs:
     publish:
         if: ${{ github.event.workflow_run.conclusion == 'success' }}
         runs-on: ubuntu-latest
         steps:
-            - uses: actions/checkout@v2
-
+            - uses: actions/checkout@v4
+            - uses: actions/setup-node@v4
+              with:
+                  node-version: "22"
             - run: |
                   npm config set //registry.npmjs.org/:_authToken=${NPM_TOKEN}
                   npm ci
